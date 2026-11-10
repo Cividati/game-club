@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clube do Game</title>
+  <meta name="description" content="Como um clube do livro, só que de games: a turma sugere jogos, vota e o mais votado vira o jogo do mês.">
+  <meta name="theme-color" content="#0a0817">
+  <meta property="og:title" content="Clube do Game">
+  <meta property="og:description" content="Sugira jogos, vote e jogue junto o jogo do mês.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="bg-fallback" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#topo" aria-label="Clube do Game, início">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><rect x="2" y="9" width="28" height="15" rx="7.5"/><path d="M9 13v7M5.5 16.5h7"/><circle cx="21" cy="14.5" r="1.6"/><circle cx="25" cy="18.5" r="1.6"/></svg>
+      </span>
+      <span class="brand-name">Clube do Game</span>
+    </a>
+    <nav class="nav" aria-label="Seções">
+      <a href="#votacao">Votação</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#hall">Hall da fama</a>
+    </nav>
+    <div class="auth" id="auth"></div>
+  </header>
+
+  <div class="demo-banner" id="demo-banner" hidden>
+    <strong>Modo demonstração.</strong> Os votos ficam só neste navegador até o banco de dados ser ligado.
+    <button type="button" class="link-btn" id="demo-reset">Recomeçar demo</button>
+  </div>
+
+  <main id="topo">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="pulse" aria-hidden="true"></span> <span id="month-label">Votação aberta</span></p>
+        <h1>Um jogo por mês.<br><span class="grad">Todo mundo junto.</span></h1>
+        <p class="lede">Como um clube do livro, só que com controle na mão. A turma sugere quantos jogos quiser, cada pessoa vota uma vez em cada jogo, e o mais votado vira o <strong>jogo do mês</strong>.</p>
+        <div class="hero-cta">
+          <button type="button" class="btn btn-primary" data-action="add-game">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Sugerir um jogo
+          </button>
+          <a class="btn btn-ghost" href="#votacao">Ver a votação</a>
+        </div>
+        <dl class="stats" id="stats">
+          <div><dt>jogos na disputa</dt><dd id="stat-games">0</dd></div>
+          <div><dt>votos no mês</dt><dd id="stat-votes">0</dd></div>
+          <div><dt>para fechar</dt><dd id="stat-countdown">–</dd></div>
+        </dl>
+      </div>
+
+      <aside class="spotlight" id="spotlight" aria-live="polite">
+        <!-- preenchido via JS -->
+      </aside>
+    </section>
+
+    <section class="section" id="votacao" aria-labelledby="votacao-title">
+      <div class="section-head">
+        <div>
+          <p class="kicker" id="ballot-kicker">Cédula do mês</p>
+          <h2 id="votacao-title">Em quem você vota?</h2>
+          <p class="muted">Você pode votar em quantos jogos quiser, mas só uma vez em cada. Clicou de novo, tira o voto.</p>
+        </div>
+        <div class="toolbar">
+          <div class="segmented" role="group" aria-label="Ordenar">
+            <button type="button" class="seg" data-sort="votes" aria-pressed="true">Mais votados</button>
+            <button type="button" class="seg" data-sort="recent" aria-pressed="false">Recentes</button>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" data-action="add-game">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Sugerir jogo
+          </button>
+        </div>
+      </div>
+
+      <ol class="grid" id="games" aria-live="polite"></ol>
+      <div class="empty" id="empty" hidden>
+        <div class="empty-art" aria-hidden="true">?</div>
+        <h3>Nenhum jogo na disputa ainda</h3>
+        <p class="muted">Seja a primeira pessoa a sugerir um jogo para este mês.</p>
+        <button type="button" class="btn btn-primary" data-action="add-game">Sugerir o primeiro jogo</button>
+      </div>
+    </section>
+
+    <section class="section" id="como-funciona" aria-labelledby="como-title">
+      <p class="kicker">Regras da casa</p>
+      <h2 id="como-title">Como funciona</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Sugira</h3>
+          <p>Qualquer membro adiciona os jogos que quer jogar no mês. Sem limite de sugestões.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Vote</h3>
+          <p>Um voto por jogo por pessoa. Dá para apoiar vários jogos e mudar de ideia até o fim do mês.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Jogue</h3>
+          <p>O mais votado é eleito o jogo do mês. Quando o mês vira, ele entra para o hall da fama e uma nova votação começa.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section" id="hall" aria-labelledby="hall-title">
+      <p class="kicker">Meses anteriores</p>
+      <h2 id="hall-title">Hall da fama</h2>
+      <ol class="hall" id="hall-list"></ol>
+      <p class="muted" id="hall-empty">Os vencedores dos meses anteriores aparecem aqui.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Clube do Game · feito pela turma, para a turma.</p>
+  </footer>
+
+  <!-- Diálogo: sugerir jogo -->
+  <dialog class="modal" id="add-dialog" aria-labelledby="add-title">
+    <form method="dialog" id="add-form" novalidate>
+      <header class="modal-head">
+        <h2 id="add-title">Sugerir um jogo</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </header>
+      <label class="field">
+        <span>Nome do jogo</span>
+        <input name="title" required maxlength="80" autocomplete="off" placeholder="Ex.: Outer Wilds">
+      </label>
+      <div class="field-row">
+        <label class="field">
+          <span>Plataforma <em>(opcional)</em></span>
+          <input name="platform" maxlength="40" list="platforms" placeholder="PC, Switch, PS5…">
+          <datalist id="platforms">
+            <option>PC</option><option>PlayStation 5</option><option>Xbox Series</option><option>Nintendo Switch</option><option>Multiplataforma</option><option>Mobile</option>
+          </datalist>
+        </label>
+        <label class="field">
+          <span>Duração <em>(opcional)</em></span>
+          <select name="duration">
+            <option value="">Não sei</option>
+            <option value="curto">Curto (até 10h)</option>
+            <option value="medio">Médio (10 a 30h)</option>
+            <option value="longo">Longo (30h+)</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">
+        <span>Por que jogar? <em>(opcional)</em></span>
+        <textarea name="pitch" rows="3" maxlength="280" placeholder="Convença a turma em uma ou duas frases."></textarea>
+      </label>
+      <label class="field">
+        <span>Link da capa <em>(opcional, https)</em></span>
+        <input name="cover" type="url" maxlength="500" placeholder="https://…/capa.jpg">
+      </label>
+      <p class="form-error" id="add-error" role="alert"></p>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary" value="ok">Adicionar à votação</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Diálogo: entrar -->
+  <dialog class="modal" id="login-dialog" aria-labelledby="login-title">
+    <form method="dialog" id="login-form" novalidate>
+      <header class="modal-head">
+        <h2 id="login-title">Entrar no clube</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Fechar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </header>
+      <p class="muted" id="login-help">Para garantir um voto por jogo por pessoa, cada membro entra com o próprio e-mail. Mandamos um link mágico, sem senha.</p>
+      <label class="field" id="login-name-field">
+        <span>Como a turma te chama</span>
+        <input name="name" maxlength="30" autocomplete="nickname" placeholder="Seu apelido">
+      </label>
+      <label class="field" id="login-email-field">
+        <span>E-mail</span>
+        <input name="email" type="email" autocomplete="email" placeholder="voce@exemplo.com">
+      </label>
+      <p class="form-error" id="login-error" role="alert"></p>
+      <p class="form-ok" id="login-ok" role="status"></p>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="login-github" hidden>Entrar com GitHub</button>
+        <button type="submit" class="btn btn-primary" value="ok" id="login-submit">Receber link</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
